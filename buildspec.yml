@@ -1,0 +1,38 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto17
+    commands:
+      - echo "Installing dependencies..."
+      - sudo chmod 777 gradlew
+      - ./gradlew build -x test
+  pre_build:
+    commands:
+      - echo "Setting up environment variables..."
+      - echo "" > src/main/resources/application.properties
+      - echo "spring.datasource.url=$DB_URL" >> src/main/resources/application.properties
+      - echo "spring.datasource.username=$DB_USERNAME" >> src/main/resources/application.properties
+      - echo "spring.datasource.password=$DB_PASSWORD" >> src/main/resources/application.properties
+  build:
+    commands:
+      - echo "Build started on `date`"
+      - ./gradlew clean build -x test
+      - echo "Build completed on `date`"
+  post_build:
+    commands:
+      - echo "Post-build steps"
+      - ls build/libs/
+      - echo "Build completed. Preparing to deploy."
+artifacts:
+  files:
+    - appspec.yml
+    - build/libs/*.jar
+    - scripts/*
+  discard-paths: yes
+
+cache:
+  paths:
+    - ~/.gradle/caches/**
+
